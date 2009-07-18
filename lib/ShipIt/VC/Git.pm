@@ -61,6 +61,19 @@ sub commit {
     print $tmp_fh $msg;
     my $tmp_fn = "$tmp_fh";
     system($command, "commit", "-a", "-F", $tmp_fn);
+
+    # push
+    if (my $where = $self->{push_to}) {
+        open my $fh, '<', '.git/HEAD';
+        chomp(my $head = do { local $/; <$fh> });
+        close $fh;
+
+        my ($branch) = $head =~ m!ref: refs/heads/(\S+)!;
+        if ($branch) {
+            warn "pushing to $where";
+            system($command, "push", $where, $branch);
+        }
+    }
 }
 
 sub local_diff {
